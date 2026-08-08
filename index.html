@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>20·5·1 — 一分钟讲明白</title>
-<meta name="description" content="20 分钟研究，5 分钟准备，1 分钟讲明白。一个逼你把知识说出口的计时训练场。">
+<title>20·5·1·5 — 一分钟讲明白，再被外行追问</title>
+<meta name="description" content="20 分钟研究，5 分钟准备，1 分钟讲明白，5 分钟被一个完全不懂的人追问。计时、留痕、复盘全在本机，对话在你自己的 ChatGPT 里发生。">
 <meta name="theme-color" content="#f4f1ea">
 <link rel="stylesheet" href="./assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='26'>⏱</text></svg>">
@@ -15,9 +15,9 @@
 <!-- ============ 首屏：设置 ============ -->
 <main id="view-setup" class="view">
   <header class="brand">
-    <div class="seal">廿五一</div>
+    <div class="seal">廿五一五</div>
     <h1>一分钟讲明白</h1>
-    <p class="sub">20 分钟研究 · 5 分钟准备 · 1 分钟呈现</p>
+    <p class="sub">20 研究 · 5 准备 · 1 呈现 · 5 受审</p>
   </header>
 
   <section class="card">
@@ -27,7 +27,7 @@
     </label>
 
     <div class="field">
-      <span class="field-label">三段时长（分钟）</span>
+      <span class="field-label">四段时长（分钟）</span>
       <div class="phases">
         <div class="phase-set">
           <span class="phase-tag t1">研究</span>
@@ -41,12 +41,29 @@
           <span class="phase-tag t3">呈现</span>
           <input id="m-talk" type="number" min="1" max="30" value="1" inputmode="numeric">
         </div>
+        <div class="phase-set">
+          <span class="phase-tag t4">受审</span>
+          <input id="m-grill" type="number" min="1" max="60" value="5" inputmode="numeric">
+        </div>
       </div>
     </div>
 
+    <label class="field">
+      <span class="field-label">审问强度</span>
+      <select id="level">
+        <option value="soft">好奇宝宝 · 顺着你问，只求听懂</option>
+        <option value="normal" selected>正常外行 · 拿生活经验对照你的说法</option>
+        <option value="hard">较真的人 · 揪住一个词不放，直到你承认边界</option>
+      </select>
+    </label>
+
     <label class="toggle">
       <input id="opt-rec" type="checkbox">
-      <span>呈现时录音，结束后回放（音频只留在本机，不上传）</span>
+      <span>呈现+受审时录音，结束后回放（只留在本机，不上传）</span>
+    </label>
+    <label class="toggle">
+      <input id="opt-screen" type="checkbox">
+      <span>录屏：把整场过程录下来（本机文件，桌面浏览器才支持）</span>
     </label>
     <label class="toggle">
       <input id="opt-sound" type="checkbox" checked>
@@ -59,10 +76,11 @@
   <section class="card rules">
     <h2>规则</h2>
     <ol>
-      <li><b>研究阶段</b>可以查任何资料，笔记就记在这一页上。</li>
-      <li><b>准备阶段</b>不许再查资料，只能整理已经拿到的东西——把知识点串成知识面。</li>
-      <li><b>呈现阶段</b>对着镜头或空气讲一遍。卡壳、跑题、口齿不清，自己按一下计数。</li>
-      <li>时间到就停。讲不完就是没准备好，这个信息比讲完更值钱。</li>
+      <li><b>研究</b>可以查任何资料，笔记就记在这一页上。</li>
+      <li><b>准备</b>不许再查资料，只能整理已经拿到的东西——把知识点串成知识面。</li>
+      <li><b>呈现</b>对着镜头或空气讲一遍。卡壳、跑题，自己按一下计数。</li>
+      <li><b>受审</b>把这页给你的开场话术念给 ChatGPT 语音，让它扮一个完全不懂的人追问你。答完把对话粘回来。</li>
+      <li>时间到就停。讲不完、答不上，这个信息比讲完更值钱。</li>
     </ol>
   </section>
 
@@ -71,7 +89,10 @@
     <div id="history"></div>
   </section>
 
-  <footer class="foot">数据只存在这台设备的浏览器里，没有服务器，没有账号。</footer>
+  <footer class="foot">
+    没有服务器，没有账号，没有 API key。<br>
+    对话发生在你自己的 ChatGPT 客户端里，这一页只负责计时和留痕。
+  </footer>
 </main>
 
 <!-- ============ 运行中 ============ -->
@@ -86,6 +107,7 @@
       <div class="rail-item" data-p="research"><i></i><span>研究</span></div>
       <div class="rail-item" data-p="prep"><i></i><span>准备</span></div>
       <div class="rail-item" data-p="talk"><i></i><span>呈现</span></div>
+      <div class="rail-item" data-p="grill"><i></i><span>受审</span></div>
     </div>
 
     <div class="clock-wrap">
@@ -117,7 +139,7 @@
     <p class="notes-lock hidden" id="notes-lock">准备阶段：不许再查资料了。只能动这页已有的字。</p>
   </section>
 
-  <!-- 呈现：卡壳计数 + 录音 -->
+  <!-- 呈现：卡壳计数 -->
   <section class="card talk-card hidden" id="talk-card">
     <div class="tally-grid">
       <button class="tally" data-k="stuck"><b id="c-stuck">0</b><span>卡壳</span></button>
@@ -134,6 +156,30 @@
       <pre id="notes-peek"></pre>
     </details>
   </section>
+
+  <!-- 受审：ChatGPT 客户端负责对话，这里只给话术 + 收对话 -->
+  <section class="card grill-card hidden" id="grill-card">
+    <div class="notes-head">
+      <span class="field-label">第一步：把这段念给 ChatGPT 语音</span>
+      <button id="btn-copy-prompt" class="btn-mini">复制话术</button>
+    </div>
+    <pre class="prompt-box" id="prompt-box"></pre>
+    <div class="grill-level">
+      <span class="field-label">审问强度</span>
+      <div class="seg" id="seg-level">
+        <button class="seg-btn" data-lv="soft">好奇宝宝</button>
+        <button class="seg-btn on" data-lv="normal">正常追问</button>
+        <button class="seg-btn" data-lv="hard">杠精</button>
+      </div>
+    </div>
+
+    <div class="notes-head sep">
+      <span class="field-label">第二步：答完把整段对话粘回来</span>
+      <span class="counter" id="dlg-count">0 轮追问</span>
+    </div>
+    <textarea id="dialogue" placeholder="在 ChatGPT 里点复制，粘到这儿。我会把它问的问题挑出来，算成这一场的账。"></textarea>
+    <p class="tip">粘贴后会自动识别问句。识别不准也没关系，问题清单可以手动改。</p>
+  </section>
 </main>
 
 <!-- ============ 复盘 ============ -->
@@ -148,10 +194,22 @@
     <div class="score-row">
       <div class="score"><b id="s-total">0</b><span>失误合计</span></div>
       <div class="score"><b id="s-words">0</b><span>笔记字数</span></div>
-      <div class="score"><b id="s-talk">0s</b><span>实际讲了</span></div>
+      <div class="score"><b id="s-ask">0</b><span>被追问</span></div>
     </div>
     <div class="bars" id="bars"></div>
     <p class="verdict" id="verdict"></p>
+  </section>
+
+  <section class="card hidden" id="qa-card">
+    <span class="field-label">它问了你什么（勾掉你答得上的）</span>
+    <div id="qa-list"></div>
+    <p class="tip" id="qa-tip"></p>
+  </section>
+
+  <section class="card hidden" id="screen-card">
+    <span class="field-label">录屏留档</span>
+    <p class="tip">文件没上传到任何地方，就在你这台机器的内存里。关掉这一页就没了，要留就现在下载。</p>
+    <a id="screen-link" class="btn btn-ghost dl" download>下载这场的录屏（.webm）</a>
   </section>
 
   <section class="card hidden" id="audio-card">
@@ -168,6 +226,7 @@
   <div class="done-actions">
     <button id="btn-again" class="btn btn-primary">再来一场</button>
     <button id="btn-copy" class="btn btn-ghost">复制这场记录</button>
+    <button id="btn-ics" class="btn btn-ghost">下次提醒我（加入日历）</button>
   </div>
 </main>
 
