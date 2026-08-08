@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>20·5·1 — 一分钟讲明白</title>
+<meta name="description" content="20 分钟研究，5 分钟准备，1 分钟讲明白。一个逼你把知识说出口的计时训练场。">
+<meta name="theme-color" content="#f4f1ea">
+<link rel="stylesheet" href="./assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='26'>⏱</text></svg>">
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ============ 首屏：设置 ============ -->
+<main id="view-setup" class="view">
+  <header class="brand">
+    <div class="seal">廿五一</div>
+    <h1>一分钟讲明白</h1>
+    <p class="sub">20 分钟研究 · 5 分钟准备 · 1 分钟呈现</p>
+  </header>
+
+  <section class="card">
+    <label class="field">
+      <span class="field-label">今天研究什么</span>
+      <input id="topic" type="text" maxlength="60" placeholder="破窗效应 / 经典条件反射 / 任何一个你说不清的概念" autocomplete="off">
+    </label>
+
+    <div class="field">
+      <span class="field-label">三段时长（分钟）</span>
+      <div class="phases">
+        <div class="phase-set">
+          <span class="phase-tag t1">研究</span>
+          <input id="m-research" type="number" min="1" max="120" value="20" inputmode="numeric">
+        </div>
+        <div class="phase-set">
+          <span class="phase-tag t2">准备</span>
+          <input id="m-prep" type="number" min="1" max="60" value="5" inputmode="numeric">
+        </div>
+        <div class="phase-set">
+          <span class="phase-tag t3">呈现</span>
+          <input id="m-talk" type="number" min="1" max="30" value="1" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <label class="toggle">
+      <input id="opt-rec" type="checkbox">
+      <span>呈现时录音，结束后回放（音频只留在本机，不上传）</span>
+    </label>
+    <label class="toggle">
+      <input id="opt-sound" type="checkbox" checked>
+      <span>阶段切换时响一声</span>
+    </label>
+
+    <button id="btn-start" class="btn btn-primary">开始 · 进入研究</button>
+  </section>
+
+  <section class="card rules">
+    <h2>规则</h2>
+    <ol>
+      <li><b>研究阶段</b>可以查任何资料，笔记就记在这一页上。</li>
+      <li><b>准备阶段</b>不许再查资料，只能整理已经拿到的东西——把知识点串成知识面。</li>
+      <li><b>呈现阶段</b>对着镜头或空气讲一遍。卡壳、跑题、口齿不清，自己按一下计数。</li>
+      <li>时间到就停。讲不完就是没准备好，这个信息比讲完更值钱。</li>
+    </ol>
+  </section>
+
+  <section id="history-wrap" class="card hidden">
+    <h2>过去的场次 <button id="btn-clear" class="btn-mini">清空</button></h2>
+    <div id="history"></div>
+  </section>
+
+  <footer class="foot">数据只存在这台设备的浏览器里，没有服务器，没有账号。</footer>
+</main>
+
+<!-- ============ 运行中 ============ -->
+<main id="view-run" class="view hidden">
+  <header class="run-head">
+    <div class="run-topic" id="run-topic">—</div>
+    <button id="btn-abort" class="btn-mini ghost">放弃</button>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="stage-rail">
+      <div class="rail-item" data-p="research"><i></i><span>研究</span></div>
+      <div class="rail-item" data-p="prep"><i></i><span>准备</span></div>
+      <div class="rail-item" data-p="talk"><i></i><span>呈现</span></div>
+    </div>
+
+    <div class="clock-wrap">
+      <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="ring-bg" cx="100" cy="100" r="92"></circle>
+        <circle class="ring-fg" id="ring-fg" cx="100" cy="100" r="92"></circle>
+      </svg>
+      <div class="clock">
+        <div class="clock-time" id="clock">20:00</div>
+        <div class="clock-phase" id="phase-name">研究</div>
+      </div>
+    </div>
+
+    <p class="stage-hint" id="stage-hint">可以查任何资料。笔记记在下面。</p>
+
+    <div class="run-actions">
+      <button id="btn-pause" class="btn btn-ghost">暂停</button>
+      <button id="btn-next" class="btn btn-primary">提前进入下一段</button>
+    </div>
+  </div>
+
+  <!-- 研究/准备：笔记 -->
+  <section class="card notes-card" id="notes-card">
+    <div class="notes-head">
+      <span class="field-label" id="notes-label">研究笔记</span>
+      <span class="counter" id="note-count">0 字</span>
+    </div>
+    <textarea id="notes" placeholder="把查到的东西丢进来。不用整理，先攒料。"></textarea>
+    <p class="notes-lock hidden" id="notes-lock">准备阶段：不许再查资料了。只能动这页已有的字。</p>
+  </section>
+
+  <!-- 呈现：卡壳计数 + 录音 -->
+  <section class="card talk-card hidden" id="talk-card">
+    <div class="tally-grid">
+      <button class="tally" data-k="stuck"><b id="c-stuck">0</b><span>卡壳</span></button>
+      <button class="tally" data-k="slur"><b id="c-slur">0</b><span>口齿不清</span></button>
+      <button class="tally" data-k="drift"><b id="c-drift">0</b><span>跑题</span></button>
+      <button class="tally" data-k="filler"><b id="c-filler">0</b><span>嗯…那个</span></button>
+    </div>
+    <div class="rec-row" id="rec-row">
+      <span class="rec-dot" id="rec-dot"></span>
+      <span id="rec-state">未录音</span>
+    </div>
+    <details class="cheat">
+      <summary>偷看一眼笔记（记一次算破戒）</summary>
+      <pre id="notes-peek"></pre>
+    </details>
+  </section>
+</main>
+
+<!-- ============ 复盘 ============ -->
+<main id="view-done" class="view hidden">
+  <header class="brand tight">
+    <div class="seal">复盘</div>
+    <h1 id="done-topic">—</h1>
+    <p class="sub" id="done-when">—</p>
+  </header>
+
+  <section class="card">
+    <div class="score-row">
+      <div class="score"><b id="s-total">0</b><span>失误合计</span></div>
+      <div class="score"><b id="s-words">0</b><span>笔记字数</span></div>
+      <div class="score"><b id="s-talk">0s</b><span>实际讲了</span></div>
+    </div>
+    <div class="bars" id="bars"></div>
+    <p class="verdict" id="verdict"></p>
+  </section>
+
+  <section class="card hidden" id="audio-card">
+    <span class="field-label">回放：听听自己是怎么讲的</span>
+    <audio id="player" controls></audio>
+    <p class="tip">第一次听自己的录音会不舒服，那正是有用的部分。</p>
+  </section>
+
+  <section class="card">
+    <span class="field-label">笔记留档</span>
+    <pre class="notes-dump" id="notes-dump"></pre>
+  </section>
+
+  <div class="done-actions">
+    <button id="btn-again" class="btn btn-primary">再来一场</button>
+    <button id="btn-copy" class="btn btn-ghost">复制这场记录</button>
+  </div>
+</main>
+
+<script src="./assets/app.js"></script>
+</body>
+</html>
